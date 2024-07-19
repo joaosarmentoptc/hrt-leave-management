@@ -3,6 +3,7 @@ const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
 const logger = require("morgan");
+const verifyToken = require("./src/middlewares/auth");
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: false }));
 const getRoute = (name) => require(`./src/modules/${name}/route`);
 
 app.use("/healthcheck", getRoute("healthcheck"));
+app.use("/leaves/requests", verifyToken, getRoute("leaverequests"));
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
