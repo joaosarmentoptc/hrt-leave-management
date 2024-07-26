@@ -17,6 +17,7 @@ const getRoute = (name) => require(`./src/modules/${name}/route`);
 
 app.use("/healthcheck", getRoute("healthcheck"));
 app.use("/leaves/requests", verifyToken, getRoute("leaverequests"));
+app.use("/leaves/balance", verifyToken, getRoute("leavebalance"));
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

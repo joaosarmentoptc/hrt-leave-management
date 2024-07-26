@@ -12,6 +12,10 @@ db.LeaveRequest = require("./leaveRequest")(
   database.sequelize,
   Sequelize.DataTypes
 );
+db.LeaveBalance = require("./leaveBalance")(
+  database.sequelize,
+  Sequelize.DataTypes
+);
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {

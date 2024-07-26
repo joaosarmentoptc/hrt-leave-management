@@ -4,7 +4,6 @@ const { LEAVE_REQUEST_STATUS } = require("../../../configs/enum");
 
 const router = express.Router();
 
-/* GET catalog listing. */
 router.route("/").get(controller.index);
 router.route("/").post(controller.leaveRequest);
 router.route("/:requestId/approve").patch((req, res, next) => {
