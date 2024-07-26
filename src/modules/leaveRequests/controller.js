@@ -7,19 +7,21 @@ const {
   LEAVE_ALREADY_BOOKED,
   END_DATE_AFTER_START_DATE,
   CANNOT_APPROVE_OR_REJECT_LEAVE_REQUEST,
+  INVALID_REQUEST,
 } = require("../../../configs/errors");
 
 const leaveRequestSchema = joi.object({
-  leave_type: joi.string().valid(...LEAVE_TYPES),
-  start_date: joi.date().format("YYYY-MM-DD HH:mm").required(),
+  leave_type: joi.string().valid(...Object.keys(LEAVE_TYPES)),
+  start_date: joi.date().utc().format("YYYY-MM-DD").required(),
   end_date: joi
     .date()
-    .format("YYYY-MM-DD HH:mm")
+    .utc()
+    .format("YYYY-MM-DD")
     .required()
     .custom((value, helpers) => {
       // eslint-disable-next-line camelcase
       const { start_date } = helpers.state.ancestors[0];
-      if (new Date(value) <= new Date(start_date)) {
+      if (new Date(value) < new Date(start_date)) {
         return helpers.message(END_DATE_AFTER_START_DATE);
       }
       return value;
@@ -27,7 +29,7 @@ const leaveRequestSchema = joi.object({
   reason: joi.string(),
   period: joi
     .string()
-    .valid(...LEAVE_PERIODS)
+    .valid(...Object.keys(LEAVE_PERIODS))
     .required(),
 });
 
@@ -50,11 +52,11 @@ module.exports = {
     try {
       const validated = await leaveRequestSchema.validateAsync(req.body);
       if (!req.userId) {
-        return res.status(403).json({ error: USER_NOT_AUTHENTICATED });
+        return res.status(401).json({ error: USER_NOT_AUTHENTICATED });
       }
       const created = await service.createNewRequest(req.userId, validated);
       if (!created) {
-        return res.status(200).json({ error: LEAVE_ALREADY_BOOKED });
+        return res.status(400).json({ error: LEAVE_ALREADY_BOOKED });
       }
       return res.status(201).json(created);
     } catch (error) {
@@ -66,9 +68,12 @@ module.exports = {
 
   async approveOrReject(req, res, next) {
     try {
-      const requestId = req.params.id;
+      const { requestId } = req.params;
+      if (!requestId) {
+        return res.status(400).json({ error: INVALID_REQUEST });
+      }
       if (!req.userId) {
-        return res.status(403).json({ error: USER_NOT_AUTHENTICATED });
+        return res.status(401).json({ error: USER_NOT_AUTHENTICATED });
       }
       const updated = await service.approveOrRejectRequest(
         req.userId,
@@ -82,6 +87,7 @@ module.exports = {
       return res.status(200).json({ updated });
     } catch (error) {
       console.error(error);
+      error.status = 400;
       return next(error);
     }
   },

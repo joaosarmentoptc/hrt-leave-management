@@ -10,11 +10,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      start_date: { type: DataTypes.DATE, allowNull: false },
-      end_date: { type: DataTypes.DATE, allowNull: false },
+      start_date: { type: DataTypes.DATEONLY, allowNull: false },
       period: { type: DataTypes.STRING, allowNull: false },
       reason: { type: DataTypes.STRING },
       status: { type: DataTypes.STRING, allowNull: false, default: "Pending" },
+      request_id: { type: DataTypes.UUID, allowNull: false },
     },
     {}
   );

@@ -22,7 +22,7 @@ async function findUserByIdWithSubordinatesAndLeaves(userId) {
   if (!user) return null;
 
   const subordinates = await Promise.all(
-    user.Subordinates.map(async (subordinate) => {
+    user.subordinates.map(async (subordinate) => {
       const subordinateData = await findUserByIdWithSubordinatesAndLeaves(
         subordinate.id
       );
@@ -43,7 +43,7 @@ async function findUserByIdWithSubordinatesAndLeaves(userId) {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     },
-    leaves: user.Leaves,
+    leaves: user.leaves,
     subordinates,
   };
 }

@@ -1,5 +1,12 @@
-const LEAVE_TYPES = ["Holiday", "Sick Leave"];
-const LEAVE_PERIODS = ["1-day", "Half-day"];
+const LEAVE_TYPES = {
+  annual: "Annual Leave",
+  sick: "Sick Leave",
+};
+const LEAVE_PERIODS = {
+  full: "Full Day",
+  half: "1/2 Day",
+  quarter: "1/4 Day",
+};
 const LEAVE_REQUEST_STATUS = {
   pending: "Pending",
   approved: "Approved",

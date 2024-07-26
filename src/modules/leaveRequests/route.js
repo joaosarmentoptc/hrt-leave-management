@@ -7,11 +7,11 @@ const router = express.Router();
 /* GET catalog listing. */
 router.route("/").get(controller.index);
 router.route("/").post(controller.leaveRequest);
-router.route("/:id/approve").patch((req, res, next) => {
+router.route("/:requestId/approve").patch((req, res, next) => {
   req.newStatus = LEAVE_REQUEST_STATUS.approved;
   next();
 }, controller.approveOrReject);
-router.route("/:id/reject").patch((req, res, next) => {
+router.route("/:requestId/reject").patch((req, res, next) => {
   req.newStatus = LEAVE_REQUEST_STATUS.rejected;
   next();
 }, controller.approveOrReject);

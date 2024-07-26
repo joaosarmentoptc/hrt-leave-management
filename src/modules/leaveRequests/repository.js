@@ -1,39 +1,29 @@
-const { LeaveRequest, Sequelize } = require("../../../models");
-const { LEAVE_REQUEST_STATUS } = require("../../../configs/enum");
+const { LeaveRequest } = require("../../../models");
 
-function create(userId, leaveData) {
-  return LeaveRequest.create({
-    user_id: userId,
-    leave_type: leaveData.leave_type,
-    start_date: leaveData.start_date,
-    end_date: leaveData.end_date,
-    period: leaveData.period,
-    reason: leaveData.reason,
-    status: LEAVE_REQUEST_STATUS.pending,
-  });
+function createBulkRequest(leaveData) {
+  return LeaveRequest.bulkCreate(leaveData);
 }
 
-function findByPkAndDate(userId, date) {
-  return LeaveRequest.findOne({
+function findByPkAndDate(userId, dates) {
+  return LeaveRequest.findAll({
     where: {
-      [Sequelize.Op.and]: [
-        { user_id: userId },
-
-        Sequelize.where(
-          Sequelize.fn("DATE", Sequelize.col("start_date")),
-          date
-        ),
-      ],
+      user_id: userId,
+      start_date: dates,
     },
   });
 }
 
-function findByPk(leaveRequestId) {
-  return LeaveRequest.findByPk(leaveRequestId);
+function findByUuid(leaveRequestUuid) {
+  return LeaveRequest.findAll({ where: { request_id: leaveRequestUuid } });
 }
 
-function findByPkAndChangeStatus(leaveRequest, status) {
-  return leaveRequest.update({ status });
+function findByPkAndChangeStatus(requestId, status) {
+  return LeaveRequest.update({ status }, { where: { request_id: requestId } });
 }
 
-module.exports = { create, findByPkAndDate, findByPk, findByPkAndChangeStatus };
+module.exports = {
+  createBulkRequest,
+  findByPkAndDate,
+  findByUuid,
+  findByPkAndChangeStatus,
+};

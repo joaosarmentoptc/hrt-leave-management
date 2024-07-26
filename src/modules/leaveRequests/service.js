@@ -1,8 +1,11 @@
+const moment = require("moment");
+const uuid = require("uuid");
 const userRepository = require("../employee/repository");
 const leaveRepository = require("./repository");
+const { LEAVE_REQUEST_STATUS } = require("../../../configs/enum");
 
-async function requestAlreadyExists(userId, startDate) {
-  return leaveRepository.findByPkAndDate(userId, startDate);
+async function requestAlreadyExists(userId, dates) {
+  return (await leaveRepository.findByPkAndDate(userId, dates)).length > 0;
 }
 
 async function getUserAndSubordinatesLeaves(userId) {
@@ -21,15 +24,33 @@ async function getUserAndSubordinatesLeaves(userId) {
 
 async function createNewRequest(userId, requestData) {
   try {
-    const startDate = new Date(requestData.start_date)
-      .toISOString()
-      .split("T")[0];
+    const startDate = moment(requestData.start_date, "YYYY-MM-DD");
+    const endDate = moment(requestData.end_date, "YYYY-MM-DD");
+    const numberOfDays = endDate.diff(startDate, "days") + 1;
+    const requestId = uuid.v7();
 
-    const validate = await requestAlreadyExists(userId, startDate);
-    if (validate) {
+    const listOfDays = [];
+
+    for (let i = 0; i < numberOfDays; i += 1) {
+      const currentDate = moment(requestData.start_date)
+        .add(i, "days")
+        .format("YYYY-MM-DD");
+      listOfDays.push({
+        ...requestData,
+        user_id: userId,
+        start_date: currentDate,
+        status: LEAVE_REQUEST_STATUS.pending,
+        request_id: requestId,
+      });
+    }
+
+    const dates = listOfDays.map((request) => request.start_date);
+
+    const alreadyBooked = await requestAlreadyExists(userId, dates);
+    if (alreadyBooked) {
       return null;
     }
-    return leaveRepository.create(userId, requestData);
+    return leaveRepository.createBulkRequest(listOfDays);
   } catch (error) {
     console.log(error);
     throw error;
@@ -37,15 +58,15 @@ async function createNewRequest(userId, requestData) {
 }
 
 async function approveOrRejectRequest(approverId, requestId, newStatus) {
-  const leaveRequest = await leaveRepository.findByPk(requestId);
+  const leaveRequest = await leaveRepository.findByUuid(requestId);
   const canUpdate = await userRepository.isManager(
-    leaveRequest.user_id,
+    leaveRequest[0].user_id,
     approverId
   );
   if (!canUpdate) return null;
 
   const updated = await leaveRepository.findByPkAndChangeStatus(
-    leaveRequest,
+    requestId,
     newStatus
   );
   return updated;
