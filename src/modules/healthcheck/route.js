@@ -10,12 +10,7 @@ router.get("/", (req, res, next) => {
     message: "Hello, Chloé. I'm healthy, how 'bout you?",
     timestamp: Date.now(),
   };
-  try {
-    res.send(healthcheck);
-  } catch (error) {
-    healthcheck.message = error;
-    res.status(500).send();
-  }
+  res.send(healthcheck);
 });
 
 module.exports = router;
