@@ -10,6 +10,9 @@
   "jest": {
     "globalSetup": "./tests/setup/jest.setup.js",
     "globalTeardown": "./tests/setup/jest.teardown.js",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup/jest.setupAfterEnv.js"
+    ],
     "collectCoverageFrom": [
       "src/**/*.js",
       "models/**/*.js"
